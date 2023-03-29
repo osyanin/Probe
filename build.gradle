@@ -1,0 +1,97 @@
+plugins {
+    id 'java'
+    id 'io.qameta.allure' version '2.11.0'
+}
+
+group 'com.tests'
+version '1.0-SNAPSHOT'
+
+defaultTasks 'clean', 'test'
+
+configurations {
+    testImplementation {
+        canBeResolved=true
+    }
+}
+
+sourceSets {
+    test {
+        java {srcDir 'test'}
+        resources {srcDir 'test'}
+    }
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+    maven {
+        url "https://plugins.gradle.org/m2/"
+    }
+}
+
+ext {
+    allureVersion = '2.18.0'
+    junitVersion = '5.9.0'
+    junitPlatformVersion = '1.9.0'
+    slf4jVersion = '1.7.36'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    testImplementation('com.codeborne:selenide:6.9.0')
+    testImplementation("io.qameta.allure:allure-selenide:${allureVersion}")
+    testImplementation('org.assertj:assertj-core:3.19.0')
+    implementation("org.slf4j:slf4j-api:${slf4jVersion}")
+    testImplementation("org.slf4j:slf4j-log4j12:${slf4jVersion}")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testImplementation("org.junit.platform:junit-platform-runner:${junitPlatformVersion}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+}
+
+test {
+    systemProperties = System.properties
+    useJUnitPlatform()
+}
+
+test.configure { finalizedBy allureReport}
+
+task chrome(type: Test) {
+    systemProperties['selenide.browser'] = 'chrome'
+    systemProperties['selenide.headless'] = 'true'
+}
+
+task firefox(type: Test) {
+    systemProperties['selenide.browser'] = 'firefox'
+    systemProperties['selenide.headless'] = 'true'
+}
+
+task ie(type: Test) {
+    systemProperties['selenide.browser'] = 'ie'
+}
+
+task edge(type: Test) {
+    systemProperties['selenide.browser'] = 'edge'
+}
+
+// You must enable the 'Allow Remote Automation' option in Safari's Develop menu to control Safari via WebDriver.
+task safari(type: Test) {
+    systemProperties['selenide.browser'] = 'safari'
+}
+
+allure {
+    autoconfigure = false
+    aspectjweaver = true
+    //aspectjVersion  = "1.9.1"
+    version = "${allureVersion}"
+
+    useJUnit5 {
+        version = "${allureVersion}"
+    }
+}
+
+//ignoreFailures = true
+//testLogging.showStandardStreams = true
+//testLogging { events "passed", "skipped", "failed" }
